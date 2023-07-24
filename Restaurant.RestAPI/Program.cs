@@ -22,3 +22,5 @@ app.MapGet("/", async context =>
 });
 
 app.Run();
+
+public partial class Program {}
