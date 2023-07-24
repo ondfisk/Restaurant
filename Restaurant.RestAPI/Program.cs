@@ -21,6 +21,11 @@ app.MapGet("/", async context =>
     await context.Response.WriteAsync("Hello World!");
 });
 
+app.MapPost("/reservations", async context =>
+{
+    await context.Response.WriteAsync("Hello World!");
+});
+
 app.Run();
 
 public partial class Program {}
