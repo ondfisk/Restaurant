@@ -9,14 +9,14 @@ public sealed class ReservationsRepository : IReservationsRepository
         _context = context;
     }
 
-    public async Task Create(Core.Reservation reservation)
+    public async Task Create(Reservation reservation)
     {
         if (reservation is null)
         {
             throw new ArgumentNullException(nameof(reservation));
         }
 
-        var entity = new Reservation
+        var entity = new ReservationEntity
         {
             At = reservation.At,
             Email = reservation.Email,

@@ -1,4 +1,6 @@
 global using System.Collections.ObjectModel;
+global using System.Globalization;
+global using System.Net;
 global using System.Net.Http.Json;
 
 global using Microsoft.AspNetCore.Hosting;

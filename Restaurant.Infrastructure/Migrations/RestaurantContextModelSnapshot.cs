@@ -22,7 +22,7 @@ namespace Restaurant.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Restaurant.Infrastructure.Reservation", b =>
+            modelBuilder.Entity("Restaurant.Infrastructure.ReservationEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()

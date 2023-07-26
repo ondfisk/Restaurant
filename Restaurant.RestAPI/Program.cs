@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -28,7 +30,38 @@ app.MapGet("/", async context =>
 
 app.MapPost("/reservations", async (IReservationsRepository repository, ReservationDto reservation) =>
 {
-    await repository.Create(new Reservation(DateTime.Parse(reservation.At!, CultureInfo.InvariantCulture), reservation.Email!, reservation.Name!, reservation.Quantity)).ConfigureAwait(false);
+    if (string.IsNullOrWhiteSpace(reservation.Email))
+        return Results.BadRequest("Email is required.");
+
+    if (reservation.Email.Length > 50)
+        return Results.BadRequest("Email is too long.");
+
+    // validate email
+    try
+    {
+        var res = new EmailAddressAttribute().GetValidationResult(reservation.Email, new ValidationContext(reservation));
+
+        if (res != ValidationResult.Success)
+            return Results.BadRequest("Email is invalid.");
+    }
+    catch (Exception)
+    {
+        return Results.BadRequest("Email is invalid.");
+    }
+
+    if (string.IsNullOrWhiteSpace(reservation.Name))
+        return Results.BadRequest("Name is required.");
+
+    if (reservation.Name.Length > 50)
+        return Results.BadRequest("Name is too long.");
+
+    if (reservation.Quantity <= 0)
+        return Results.BadRequest("Quantity must be greater than 0.");
+
+    if (reservation.Quantity > 20)
+        return Results.BadRequest("Quantity must be at most 20.");
+
+    await repository.Create(new Reservation(reservation.At, reservation.Email, reservation.Name, reservation.Quantity)).ConfigureAwait(false);
 
     return Results.NoContent();
 });

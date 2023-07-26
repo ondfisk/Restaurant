@@ -1,6 +1,6 @@
 ﻿namespace Restaurant.Infrastructure;
 
-public sealed class Reservation
+public sealed class ReservationEntity
 {
     public int Id { get; set; }
     public required DateTime At { get; set; }
