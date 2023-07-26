@@ -9,6 +9,6 @@ public class ReservationDtoValidator : AbstractValidator<ReservationDto>
         RuleFor(x => x.At).NotEmpty();
         RuleFor(x => x.Email).NotEmpty().MaximumLength(50).EmailAddress();
         RuleFor(x => x.Name).NotEmpty().MaximumLength(50);
-        RuleFor(x => x.Quantity).NotEmpty().GreaterThan(0).LessThanOrEqualTo(20);
+        RuleFor(x => x.Quantity).NotEmpty().GreaterThan(0);
     }
 }
