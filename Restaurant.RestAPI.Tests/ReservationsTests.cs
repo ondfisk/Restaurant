@@ -1,32 +1,46 @@
-﻿
-
-using System.Net.Http.Json;
-
-namespace Restaurant.RestAPI.Tests;
+﻿namespace Restaurant.RestAPI.Tests;
 
 public sealed class ReservationsTests
 {
     [Fact]
-    public async Task Post_Valid_Reservations()
+    public async Task PostValidReservations()
     {
-        var response = await PostReservation(new
+        using var app = new ReservationApplication();
+        var client = app.CreateClient();
+
+        var response = await client.PostAsJsonAsync("/reservations", new
         {
-            date = "2023-03-10 19:00",
+            at = "2023-03-10 19:00",
             email = "katinka@example.com",
             name = "Katinka Ingabogovinanana",
             quantity = 2
-        });
+        }).ConfigureAwait(false);
 
         response.IsSuccessStatusCode.Should().BeTrue($"Actual status code: {response.StatusCode}.");
     }
 
-    private static async Task<HttpResponseMessage> PostReservation(object reservation)
+    [Fact]
+    public async Task PostValidReservationWhenDatabaseIsEmpty()
     {
-        using var factory = new WebApplicationFactory<Program>();
-        var client = factory.CreateClient();
+        using var app = new ReservationApplication();
+        var repository = app.Services.GetRequiredService<IReservationsRepository>() as FakeReservationsRepository;
+        var client = app.CreateClient();
 
-        using var content = JsonContent.Create(reservation);
+        var dto = new ReservationDto
+        {
+            At = "2023-11-24 19:00",
+            Email = "juliad@example.net",
+            Name = "Julia Donna",
+            Quantity = 5
+        };
+        await client.PostAsJsonAsync("/reservations", dto).ConfigureAwait(false);
 
-        return await client.PostAsync("/reservations", content);
+        var expected = new Reservation(
+            new DateTime(2023, 11, 24, 19, 0, 0),
+            dto.Email,
+            dto.Name,
+            dto.Quantity
+        );
+        repository!.Should().Contain(expected);
     }
 }
