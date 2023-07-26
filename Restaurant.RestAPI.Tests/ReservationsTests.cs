@@ -82,21 +82,10 @@ public sealed class ReservationsTests
         var repository = app.Services.GetRequiredService<IReservationsRepository>() as FakeReservationsRepository;
         var client = app.CreateClient();
 
-        var dto = new ReservationDto
-        {
-            At = DateTime.Parse(at, CultureInfo.InvariantCulture),
-            Email = email,
-            Name = name,
-            Quantity = quantity
-        };
+        var dto = new ReservationDto(DateTime.Parse(at, CultureInfo.InvariantCulture), email, name, quantity);
         await client.PostAsJsonAsync("/reservations", dto).ConfigureAwait(false);
 
-        var expected = new Reservation(
-            dto.At,
-            dto.Email,
-            dto.Name,
-            dto.Quantity
-        );
+        var expected = new Reservation(dto.At, dto.Email, dto.Name, dto.Quantity);
         repository!.Should().Contain(expected);
     }
 }

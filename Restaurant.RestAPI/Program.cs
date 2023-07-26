@@ -1,3 +1,4 @@
+using FluentValidation;
 using System.ComponentModel.DataAnnotations;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +12,7 @@ builder.Services.AddDbContext<Restaurant.Infrastructure.RestaurantContext>(optio
     options.UseSqlServer(builder.Configuration.GetConnectionString("Restaurant"));
 });
 builder.Services.AddScoped<IReservationsRepository, Restaurant.Infrastructure.ReservationsRepository>();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 var app = builder.Build();
 
@@ -28,38 +30,13 @@ app.MapGet("/", async context =>
     await context.Response.WriteAsync("Hello World!").ConfigureAwait(false);
 });
 
-app.MapPost("/reservations", async (IReservationsRepository repository, ReservationDto reservation) =>
+app.MapPost("/reservations", async (IReservationsRepository repository, ReservationDtoValidator validator, ReservationDto reservation) =>
 {
-    if (string.IsNullOrWhiteSpace(reservation.Email))
-        return Results.BadRequest("Email is required.");
-
-    if (reservation.Email.Length > 50)
-        return Results.BadRequest("Email is too long.");
-
-    // validate email
-    try
+    var validationResult = validator.Validate(reservation);
+    if (!validationResult.IsValid)
     {
-        var res = new EmailAddressAttribute().GetValidationResult(reservation.Email, new ValidationContext(reservation));
-
-        if (res != ValidationResult.Success)
-            return Results.BadRequest("Email is invalid.");
+        return Results.BadRequest(validationResult.ToDictionary());
     }
-    catch (Exception)
-    {
-        return Results.BadRequest("Email is invalid.");
-    }
-
-    if (string.IsNullOrWhiteSpace(reservation.Name))
-        return Results.BadRequest("Name is required.");
-
-    if (reservation.Name.Length > 50)
-        return Results.BadRequest("Name is too long.");
-
-    if (reservation.Quantity <= 0)
-        return Results.BadRequest("Quantity must be greater than 0.");
-
-    if (reservation.Quantity > 20)
-        return Results.BadRequest("Quantity must be at most 20.");
 
     await repository.Create(new Reservation(reservation.At, reservation.Email, reservation.Name, reservation.Quantity)).ConfigureAwait(false);
 
